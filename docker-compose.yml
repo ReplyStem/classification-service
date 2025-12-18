@@ -1,0 +1,61 @@
+# Docker Compose for Classification Microservice
+# Usage:
+#   docker compose up --build        # Build and run
+#   docker compose up -d             # Run in background
+#   docker compose logs -f           # View logs
+#   docker compose down              # Stop and remove
+
+services:
+  classification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: classification-service
+    ports:
+      - "8000:8000"
+    environment:
+      # JWT Authentication
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-key-here}
+      - JWT_ALGORITHM=HS256
+      
+      # Logging
+      - LOG_LEVEL=DEBUG
+      - LOG_FILE=logs/classification_service.log
+      
+      # Classification Thresholds
+      - INTENT_CONFIDENCE_THRESHOLD=0.5
+      - SENTIMENT_CONFIDENCE_THRESHOLD=0.5
+      - TOP_K_ALTERNATIVES=3
+      
+      # API Server
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      
+      # HuggingFace cache (persists models between restarts)
+      - HF_HOME=/app/.cache/huggingface
+      - TRANSFORMERS_CACHE=/app/.cache/huggingface/transformers
+    volumes:
+      # Persist logs to host
+      - ./logs:/app/logs
+      # Persist HuggingFace models cache (prevents re-download on restart)
+      - hf_models_cache:/app/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s  # Models take time to load
+    restart: unless-stopped
+    
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+# Named volumes for persistent data
+volumes:
+  hf_models_cache:
+    name: classification_service_hf_cache
