@@ -63,9 +63,12 @@ def main():
     
     # Set orchestrator reference for health checks
     set_orchestrator(orchestrator)
+    logger.info("Initialized classification orchestrator.")
     
     # Load models (this takes time on first run)
+    logger.info("model loading started...")
     orchestrator.load_models()
+    logger.info("model loading completed.")
     
     # Start health API server in background thread
     logger.info(f"Starting health API server on {settings.API_HOST}:{settings.API_PORT}")
