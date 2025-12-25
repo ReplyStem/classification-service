@@ -43,13 +43,14 @@ class IntentClassifier(BaseClassifier):
             model=self.model_name,
             device="mps" if torch.backends.mps.is_available() else (
                 "cuda" if torch.cuda.is_available() else "cpu"
-            )
+            ),
+            model_kwargs={"low_cpu_mem_usage": True}
         )
         
         # Clone parameters to fix potential mmap issues on macOS
-        if hasattr(self._pipeline.model, 'parameters'):
-            for param in self._pipeline.model.parameters():
-                param.data = param.data.clone()
+        # if hasattr(self._pipeline.model, 'parameters'):
+        #     for param in self._pipeline.model.parameters():
+        #         param.data = param.data.clone()
         
         self.model = self._pipeline
     

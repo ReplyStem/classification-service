@@ -38,7 +38,9 @@ class SentimentClassifier(BaseClassifier):
         """Load the sentiment analysis model."""
         self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self._config = AutoConfig.from_pretrained(self.model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name, 
+                                                                        dtype=torch.float16, 
+                                                                        low_cpu_mem_usage=True)
         
         # Move to appropriate device
         device = "mps" if torch.backends.mps.is_available() else (
@@ -46,9 +48,9 @@ class SentimentClassifier(BaseClassifier):
         )
         self.model.to(device)
         
-        # Clone parameters to fix potential mmap issues on macOS
-        for param in self.model.parameters():
-            param.data = param.data.clone()
+        # # Clone parameters to fix potential mmap issues on macOS
+        # for param in self.model.parameters():
+        #     param.data = param.data.clone()
         
         self.model.eval()
     

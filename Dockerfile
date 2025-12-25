@@ -54,6 +54,9 @@ ENV PYTHONUNBUFFERED=1 \
     API_HOST=0.0.0.0 \
     API_PORT=8000
 
+# Inside your Dockerfile
+RUN python -c "from transformers import pipeline; pipeline('zero-shot-classification', model='typeform/distilbert-base-uncased-mnli', model_kwargs={'low_cpu_mem_usage': True}, device=0)"
+
 # Expose health check port
 EXPOSE 8000
 
